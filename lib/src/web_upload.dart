@@ -66,6 +66,8 @@ class _FileUploadAppState extends State {
     final uploadInput = html.FileUploadInputElement();
     uploadInput.multiple = true;
     uploadInput.draggable = true;
+    // https://stackoverflow.com/questions/57544325/how-to-upload-a-specific-type-of-file-with-fileuploadinputelement-in-flutter-for
+    uploadInput.accept = '.csv';
     uploadInput.click();
 
     uploadInput.onChange.listen((e) {
