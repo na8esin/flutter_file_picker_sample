@@ -3,7 +3,18 @@ import 'package:flutter/material.dart';
 
 /// https://stackoverflow.com/questions/56252856/how-to-pick-files-and-images-for-upload-with-flutter-web/65759028#65759028
 /// を改良
-
+///
+/// firestoreに直接入れたほうがいいのか？functionsに渡すのか？
+/// functionsはメモリ制限が4G
+/// firestoreは1G超えると有料になる
+/// そもそもデータが全部揃った状態じゃないと処理できない
+/// Storageは5Gまで無料
+/// Storageに直接アップロードできるにしても、簡易チェックはしたいから、
+///   flutter上でデータが見れる必要がある
+/// 簡易チェック
+///   列数があってない
+///   拡張子：これはアップロードするときにできる
+///   必須項目が空
 void main() => runApp(MaterialApp(
       home: FileUploadWithHttp(),
     ));
@@ -20,6 +31,7 @@ class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
     //-----pick file by file picker,
 
     var result = await FilePicker.platform.pickFiles(
+      allowedExtensions: ['csv'],
       withReadStream:
           true, // this will return PlatformFile object with read stream
     );
