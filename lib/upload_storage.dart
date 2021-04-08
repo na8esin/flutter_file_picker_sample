@@ -1,14 +1,21 @@
+import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
 import 'credential.dart';
 
+final storageProvider =
+    Provider((ref) => firebase_storage.FirebaseStorage.instance);
+
 Future<void> main(List<String> args) async {
   FirebaseAuth auth = FirebaseAuth.instance;
+
   try {
     await auth.signInWithCredential(
         EmailAuthProvider.credential(email: email, password: password));
@@ -17,9 +24,10 @@ Future<void> main(List<String> args) async {
   }
   // そもそもrelease modeにするのが難しい
   // if (kDebugMode) print('debug!');
-  runApp(MaterialApp(
+  runApp(ProviderScope(
+      child: MaterialApp(
     home: MyApp(),
-  ));
+  )));
 }
 
 class MyApp extends HookWidget {
@@ -27,6 +35,9 @@ class MyApp extends HookWidget {
   Widget build(BuildContext context) {
     ValueNotifier<PlatformFile?> objFileController = useState(null);
     PlatformFile? objFile = objFileController.value;
+    final firebase_storage.FirebaseStorage storage =
+        useProvider(storageProvider);
+
     return Container(
       child: Column(
         children: [
@@ -43,7 +54,7 @@ class MyApp extends HookWidget {
           //------Show upload utton when file is selected
           ElevatedButton(
               child: Text("Upload"),
-              onPressed: () => uploadSelectedFile(objFile)),
+              onPressed: () => uploadSelectedFile(objFile, storage)),
         ],
       ),
     );
@@ -52,21 +63,39 @@ class MyApp extends HookWidget {
   Future<PlatformFile?> chooseFileUsingFilePicker() async {
     var result = await FilePicker.platform.pickFiles(
       allowedExtensions: ['csv'],
-      withReadStream:
-          true, // this will return PlatformFile object with read stream
+      type: FileType.custom,
+      //withData: true,
+      // this will return PlatformFile object with read stream
+      // streamがtrueだと優先になる
+      withReadStream: true,
     );
     if (result != null) {
       return result.files.single;
+    } else {
+      print('result is $result');
     }
   }
 
   // cloud storageに入れる
-  void uploadSelectedFile(objFile) async {
-    // 日本語が変換できない
-    // lastでいいのか？
-    final charCodes = await objFile!.readStream!
-        .map((event) => String.fromCharCodes(event))
-        .last;
-    print(charCodes);
+  void uploadSelectedFile(
+      PlatformFile? objFile, firebase_storage.FirebaseStorage storage) async {
+    if (objFile == null) {
+      print('uploadSelectedFile: objFile is null');
+      return;
+    }
+    if (objFile.path == null) {
+      // webだとサポートしてないのかよ
+      // https://github.com/miguelpruivo/flutter_file_picker/blob/master/lib/src/file_picker_result.dart#L22
+      // でもこの例外はどうやって発生するんだ？
+      print('objFile.path = ${objFile.path}');
+      return;
+    }
+
+    final bytes = objFile.bytes!;
+    final ref = storage.ref();
+    final csvRef = ref.child('sample.csv');
+    final uploadTask = csvRef.putFile(File(objFile.path!));
+    uploadTask.snapshotEvents.listen((event) {}, onError: (e) => print(e));
+    await uploadTask;
   }
 }
