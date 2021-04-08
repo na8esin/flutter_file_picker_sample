@@ -99,6 +99,8 @@ class MyApp extends HookWidget {
     // flutter webだとできないかもしれない
     //final uploadTask = csvRef.putFile(File());
     final uploadTask = csvRef.putData(bytes);
+    // web onlyみたいだけど、使い方がわからん
+    //csvRef.putBlob()
     uploadTask.snapshotEvents.listen((event) {}, onError: (e) => print(e));
     await uploadTask;
   }

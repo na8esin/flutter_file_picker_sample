@@ -14,7 +14,7 @@ class FileUploadWithHttp extends StatefulWidget {
 }
 
 class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
-  PlatformFile objFile = null;
+  PlatformFile? objFile;
 
   void chooseFileUsingFilePicker() async {
     //-----pick file by file picker,
@@ -41,8 +41,10 @@ class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
 
     //-----add selected file with request
     request.files.add(new http.MultipartFile(
-        "Your parameter name on server side", objFile.readStream, objFile.size,
-        filename: objFile.name));
+        "Your parameter name on server side",
+        objFile!.readStream!,
+        objFile!.size!,
+        filename: objFile!.name));
 
     //-------Send request
     var resp = await request.send();
@@ -64,9 +66,9 @@ class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
               child: Text("Choose File"),
               onPressed: () => chooseFileUsingFilePicker()),
           //------Show file name when file is selected
-          if (objFile != null) Text("File name : ${objFile.name}"),
+          if (objFile != null) Text("File name : ${objFile!.name}"),
           //------Show file size when file is selected
-          if (objFile != null) Text("File size : ${objFile.size} bytes"),
+          if (objFile != null) Text("File size : ${objFile!.size} bytes"),
           //------Show upload utton when file is selected
           RaisedButton(
               child: Text("Upload"), onPressed: () => uploadSelectedFile()),
