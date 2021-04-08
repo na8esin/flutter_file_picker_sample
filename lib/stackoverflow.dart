@@ -1,20 +1,9 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 /// https://stackoverflow.com/questions/56252856/how-to-pick-files-and-images-for-upload-with-flutter-web/65759028#65759028
-/// を改良
 ///
-/// firestoreに直接入れたほうがいいのか？functionsに渡すのか？
-/// functionsはメモリ制限が4G
-/// firestoreは1G超えると有料になる
-/// そもそもデータが全部揃った状態じゃないと処理できない
-/// Storageは5Gまで無料
-/// Storageに直接アップロードできるにしても、簡易チェックはしたいから、
-///   flutter上でデータが見れる必要がある
-/// 簡易チェック
-///   列数があってない
-///   拡張子：これはアップロードするときにできる
-///   必須項目が空
 void main() => runApp(MaterialApp(
       home: FileUploadWithHttp(),
     ));
@@ -25,13 +14,12 @@ class FileUploadWithHttp extends StatefulWidget {
 }
 
 class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
-  PlatformFile? objFile;
+  PlatformFile objFile = null;
 
   void chooseFileUsingFilePicker() async {
     //-----pick file by file picker,
 
     var result = await FilePicker.platform.pickFiles(
-      allowedExtensions: ['csv'],
       withReadStream:
           true, // this will return PlatformFile object with read stream
     );
@@ -42,14 +30,28 @@ class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
     }
   }
 
-  /// firestoreに直接入れるつもりだからとりあえずのコード
   void uploadSelectedFile() async {
-    // 日本語が変換できない
-    // lastでいいのか？
-    final charCodes = await objFile!.readStream!
-        .map((event) => String.fromCharCodes(event))
-        .last;
-    print(charCodes);
+    //---Create http package multipart request object
+    final request = http.MultipartRequest(
+      "POST",
+      Uri.parse("Your API URL"),
+    );
+    //-----add other fields if needed
+    request.fields["id"] = "abc";
+
+    //-----add selected file with request
+    request.files.add(new http.MultipartFile(
+        "Your parameter name on server side", objFile.readStream, objFile.size,
+        filename: objFile.name));
+
+    //-------Send request
+    var resp = await request.send();
+
+    //------Read response
+    String result = await resp.stream.bytesToString();
+
+    //-------Your response
+    print(result);
   }
 
   @override
@@ -58,15 +60,15 @@ class _FileUploadWithHttpState extends State<FileUploadWithHttp> {
       child: Column(
         children: [
           //------Button to choose file using file picker plugin
-          ElevatedButton(
+          RaisedButton(
               child: Text("Choose File"),
               onPressed: () => chooseFileUsingFilePicker()),
           //------Show file name when file is selected
-          if (objFile != null) Text("File name : ${objFile!.name}"),
+          if (objFile != null) Text("File name : ${objFile.name}"),
           //------Show file size when file is selected
-          if (objFile != null) Text("File size : ${objFile!.size} bytes"),
+          if (objFile != null) Text("File size : ${objFile.size} bytes"),
           //------Show upload utton when file is selected
-          ElevatedButton(
+          RaisedButton(
               child: Text("Upload"), onPressed: () => uploadSelectedFile()),
         ],
       ),

@@ -1,9 +1,25 @@
 import 'dart:html' as html;
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
+class UploadApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'My App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        fontFamily: 'Quicksand',
+        primarySwatch: Colors.purple,
+      ),
+      home: FileUploadApp(),
+    );
+  }
+}
 
 /// https://rodolfohernan20.blogspot.com/2019/12/upload-files-to-server-with-flutter-web.html
 
@@ -16,6 +32,7 @@ class _FileUploadAppState extends State {
   List<int>? _selectedFile;
   Uint8List? _bytesData;
   GlobalKey _formKey = GlobalKey();
+  String? _path;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +90,9 @@ class _FileUploadAppState extends State {
     uploadInput.onChange.listen((e) {
       final files = uploadInput.files;
       final file = files![0];
+      _path = file.relativePath;
+      // 取得できない
+      print('file.relativePath ${file.relativePath}');
       final reader = html.FileReader();
 
       reader.onLoadEnd.listen((e) {
@@ -101,6 +121,6 @@ class _FileUploadAppState extends State {
   }
 
   Future makeRequest() async {
-    //print(_selectedFile);
+    print('_path $_path');
   }
 }

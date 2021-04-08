@@ -92,9 +92,13 @@ class MyApp extends HookWidget {
     }
 
     final bytes = objFile.bytes!;
+    // これが使えると大きなファイルが効率的に処理できそう
+    // objFile.readStream;
     final ref = storage.ref();
     final csvRef = ref.child('sample.csv');
-    final uploadTask = csvRef.putFile(File(objFile.path!));
+    // flutter webだとできないかもしれない
+    //final uploadTask = csvRef.putFile(File());
+    final uploadTask = csvRef.putData(bytes);
     uploadTask.snapshotEvents.listen((event) {}, onError: (e) => print(e));
     await uploadTask;
   }
