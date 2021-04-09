@@ -14,6 +14,9 @@ import 'credential.dart';
 final storageProvider =
     Provider((ref) => firebase_storage.FirebaseStorage.instance);
 
+/// file_pickerを使って、firebase_storageにアップロードする
+/// functionsのキックはアップロードを待つか？
+/// キックすること自体を非同期にするとスケジューラが必要になりそう
 Future<void> main(List<String> args) async {
   FirebaseAuth auth = FirebaseAuth.instance;
 
@@ -85,7 +88,7 @@ class MyApp extends HookWidget {
       return;
     }
     if (objFile.path == null) {
-      // webだとサポートしてないのかよ
+      // webだとサポートしてないのか
       // https://github.com/miguelpruivo/flutter_file_picker/blob/master/lib/src/file_picker_result.dart#L22
       // でもこの例外はどうやって発生するんだ？
       print('objFile.path = ${objFile.path}');
@@ -128,7 +131,7 @@ class MyApp extends HookWidget {
   }
 
   void putFile(objFile, csvRef) {
-    // webだと pathは取れないけど、nameがいけるんじゃないか？
+    // webだと pathは取れないけど、nameがいけるんじゃないか？ -> 無理
     print('objFile.name= ${objFile.name}');
     File ioFile = File(objFile.name!);
     // Error: Unsupported operation: Platform._operatingSystem
