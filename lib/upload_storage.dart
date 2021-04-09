@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -88,20 +89,49 @@ class MyApp extends HookWidget {
       // https://github.com/miguelpruivo/flutter_file_picker/blob/master/lib/src/file_picker_result.dart#L22
       // でもこの例外はどうやって発生するんだ？
       print('objFile.path = ${objFile.path}');
-      return;
+      //return;
     }
 
-    final bytes = objFile.bytes!;
-    // これが使えると大きなファイルが効率的に処理できそう
-    // objFile.readStream;
+    // withData: true,にしないといけない
+    //print('bytes = ${objFile.bytes!}');
+    //final bytes = objFile.bytes!;
+
+    // readStreamが使えると大きなファイルが効率的に処理できそう
+    // withData: trueでも変わらない実装になりそうだが、
+    // pluginに関数が増えた時のために頑張る
+    final elements =
+        await objFile.readStream!.fold<List<int>>([], (previous, element) {
+      previous.addAll(element);
+      return previous;
+    });
     final ref = storage.ref();
-    final csvRef = ref.child('sample.csv');
-    // flutter webだとできないかもしれない
-    //final uploadTask = csvRef.putFile(File());
+    // 名前の上書きとかが気になる
+    final csvRef = ref.child(objFile.name!);
+    await putDataOrString(csvRef, Uint8List.fromList(elements));
+  }
+
+  /// 現実的な選択肢だとputDataかputString
+  /// Stringはあまり効率的なデータではなさそう
+  Future<void> putDataOrString(
+      firebase_storage.Reference csvRef, Uint8List bytes) async {
     final uploadTask = csvRef.putData(bytes);
-    // web onlyみたいだけど、使い方がわからん
-    //csvRef.putBlob()
-    uploadTask.snapshotEvents.listen((event) {}, onError: (e) => print(e));
+
+    uploadTask.snapshotEvents.listen((event) {}, onError: (e) {
+      print('some error');
+    });
     await uploadTask;
+  }
+
+  void putBlob() {
+    // web only。FileUploadInputElementと一緒に使える
+    // final uploadTask = csvRef.putBlob(objFile);
+  }
+
+  void putFile(objFile, csvRef) {
+    // webだと pathは取れないけど、nameがいけるんじゃないか？
+    print('objFile.name= ${objFile.name}');
+    File ioFile = File(objFile.name!);
+    // Error: Unsupported operation: Platform._operatingSystem
+    final uploadTask = csvRef.putFile(ioFile);
   }
 }
