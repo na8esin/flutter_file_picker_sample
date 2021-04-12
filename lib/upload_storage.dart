@@ -65,7 +65,7 @@ class MyApp extends HookWidget {
   }
 
   Future<PlatformFile?> chooseFileUsingFilePicker() async {
-    var result = await FilePicker.platform.pickFiles(
+    final result = await FilePicker.platform.pickFiles(
       allowedExtensions: ['csv'],
       type: FileType.custom,
       //withData: true,
@@ -102,13 +102,15 @@ class MyApp extends HookWidget {
     // readStreamが使えると大きなファイルが効率的に処理できそう
     // withData: trueでも変わらない実装になりそうだが、
     // pluginに関数が増えた時のために頑張る
+    //
+    // でもこれ、intだと列数チェックとかできなくない？
     final elements =
         await objFile.readStream!.fold<List<int>>([], (previous, element) {
       previous.addAll(element);
       return previous;
     });
     final ref = storage.ref();
-    // 名前の上書きとかが気になる
+    // ファイルの上書きとかが気になる
     final csvRef = ref.child(objFile.name!);
     await putDataOrString(csvRef, Uint8List.fromList(elements));
   }
