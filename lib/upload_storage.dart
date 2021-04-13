@@ -49,12 +49,12 @@ class MyApp extends HookWidget {
           ElevatedButton(
               child: Text("Choose File"),
               onPressed: () async {
-                objFile = await chooseFileUsingFilePicker();
+                objFileController.value = await chooseFileUsingFilePicker();
               }),
           //------Show file name when file is selected
-          if (objFile != null) Text("File name : ${objFile!.name}"),
+          if (objFile != null) Text("File name : ${objFile.name}"),
           //------Show file size when file is selected
-          if (objFile != null) Text("File size : ${objFile!.size} bytes"),
+          if (objFile != null) Text("File size : ${objFile.size} bytes"),
           //------Show upload utton when file is selected
           ElevatedButton(
               child: Text("Upload"),
@@ -64,6 +64,7 @@ class MyApp extends HookWidget {
     );
   }
 
+  // TODO: ファイル選択ボタンが別で出てしまう
   Future<PlatformFile?> chooseFileUsingFilePicker() async {
     final result = await FilePicker.platform.pickFiles(
       allowedExtensions: ['csv'],
