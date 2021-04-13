@@ -18,3 +18,6 @@ binフォルダにおけばブラウザが立ち上がらない
   -   列数があってない
   -   拡張子：これはアップロードするときにできる
   -   必須項目が空
+
+## input file
+https://developer.mozilla.org/ja/docs/Web/HTML/Element/input/file
