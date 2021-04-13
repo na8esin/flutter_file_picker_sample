@@ -6,6 +6,8 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
+void main() => runApp(UploadApp());
+
 class UploadApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
