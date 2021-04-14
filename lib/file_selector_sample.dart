@@ -23,8 +23,8 @@ class MyApp extends StatelessWidget {
 class OpenTextPage extends StatelessWidget {
   void _openTextFile(BuildContext context) async {
     final XTypeGroup typeGroup = XTypeGroup(
-      label: 'text',
-      extensions: ['txt', 'json'],
+      label: 'csv',
+      extensions: ['csv'],
     );
     final XFile? file = await openFile(acceptedTypeGroups: [typeGroup]);
     if (file == null) {
